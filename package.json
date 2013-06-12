@@ -1,8 +1,8 @@
 {
   "name": "AngularJS",
-  "version": "1.0.7",
+  "version": "1.0.7.diego.1",
   "cdnVersion": "1.0.6",
-  "codename": "monochromatic-rainbow",
+  "codename": "controller.exists",
   "devDependencies": {
     "grunt": "0.4.0",
     "grunt-contrib-clean": "0.4.0",

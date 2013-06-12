@@ -56,17 +56,31 @@ function $ControllerProvider() {
      * a service, so that one can override this service with {@link https://gist.github.com/1649788
      * BC version}.
      */
-    return function(constructor, locals) {
-      if(isString(constructor)) {
-        var name = constructor;
-        constructor = controllers.hasOwnProperty(name)
-            ? controllers[name]
-            : getter(locals.$scope, name, true) || getter($window, name, true);
+    function $controller(constructor, locals) {
 
-        assertArgFn(constructor, name, true);
-      }
+        if(isString(constructor)) {
+            var name = constructor;
+            constructor = controllers.hasOwnProperty(name)
+                ? controllers[name]
+                : getter(locals.$scope, name, true) || getter($window, name, true);
 
-      return $injector.instantiate(constructor, locals);
-    };
+            assertArgFn(constructor, name, true);
+        }
+
+        return $injector.instantiate(constructor, locals);
+    }
+
+      /**
+       * Checks if there is a conroller registered on the module with the given name.
+       *
+       * @param {String} controllerName The name of the controller to check.
+       * @returns {boolean}
+       */
+      $controller.exists = function(controllerName) {
+
+          return controllers.hasOwnProperty(controllerName);
+      };
+
+      return $controller;
   }];
 }
