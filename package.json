@@ -2,7 +2,7 @@
   "name": "AngularJS",
   "version": "1.0.7.diego.1",
   "cdnVersion": "1.0.6",
-  "codename": "controller.exists",
+  "codename": "controller.exists+controller.exists",
   "devDependencies": {
     "grunt": "0.4.0",
     "grunt-contrib-clean": "0.4.0",
