@@ -57,7 +57,7 @@ function $ControllerProvider() {
      * a service, so that one can override this service with {@link https://gist.github.com/1649788
      * BC version}.
      */
-    return function(expression, locals) {
+    function $controller(expression, locals) {
       var instance, match, constructor, identifier;
 
       if(isString(expression)) {
@@ -83,6 +83,19 @@ function $ControllerProvider() {
       }
 
       return instance;
-    };
+    }
+
+      /**
+       * Checks if there is a conroller registered on the module with the given name.
+       *
+       * @param {String} controllerName The name of the controller to check.
+       * @returns {boolean}
+       */
+      $controller.exists = function(controllerName) {
+
+          return controllers.hasOwnProperty(controllerName);
+      };
+
+    return $controller;
   }];
 }
