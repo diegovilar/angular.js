@@ -181,7 +181,7 @@ function JQLiteDealoc(element){
   }
 }
 
-function bindFn(element, type, fn){
+function JQLiteBind(element, type, fn){
     var events = JQLiteExpandoStore(element, 'events'),
         handle = JQLiteExpandoStore(element, 'handle');
 
@@ -220,7 +220,7 @@ function bindFn(element, type, fn){
           // Read about mouseenter and mouseleave:
           // http://www.quirksmode.org/js/events_mouse.html#link8
           var eventmap = { mouseleave : "mouseout", mouseenter : "mouseover"}          
-          bindFn(element, eventmap[type], function(event) {
+          JQLiteBind(element, eventmap[type], function(event) {
             var ret, target = this, related = event.relatedTarget;
             // For mousenter/leave call the handler if related is outside the target.
             // NB: No relatedTarget if the mouse left/entered the browser window

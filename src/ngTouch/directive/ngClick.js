@@ -2,13 +2,15 @@
 
 /**
  * @ngdoc directive
- * @name ngMobile.directive:ngClick
+ * @name ngTouch.directive:ngClick
  *
  * @description
  * A more powerful replacement for the default ngClick designed to be used on touchscreen
  * devices. Most mobile browsers wait about 300ms after a tap-and-release before sending
  * the click event. This version handles them immediately, and then prevents the
  * following click event from propagating.
+ *
+ * Requires the {@link ngTouch `ngTouch`} module to be installed.
  *
  * This directive can fall back to using an ordinary click event, and so works on desktop
  * browsers as well as mobile.
@@ -31,7 +33,7 @@
     </doc:example>
  */
 
-ngMobile.config(['$provide', function($provide) {
+ngTouch.config(['$provide', function($provide) {
   $provide.decorator('ngClickDirective', ['$delegate', function($delegate) {
     // drop the default ngClick directive
     $delegate.shift();
@@ -39,7 +41,7 @@ ngMobile.config(['$provide', function($provide) {
   }]);
 }]);
 
-ngMobile.directive('ngClick', ['$parse', '$timeout', '$rootElement',
+ngTouch.directive('ngClick', ['$parse', '$timeout', '$rootElement',
     function($parse, $timeout, $rootElement) {
   var TAP_DURATION = 750; // Shorter than 750ms is a tap, longer is a taphold or drag.
   var MOVE_TOLERANCE = 12; // 12px seems to work in most mobile browsers.
@@ -135,6 +137,9 @@ ngMobile.directive('ngClick', ['$parse', '$timeout', '$rootElement',
     // If we didn't find an allowable region, bust the click.
     event.stopPropagation();
     event.preventDefault();
+
+    // Blur focused form elements
+    event.target && event.target.blur();
   }
 
 
@@ -185,7 +190,7 @@ ngMobile.directive('ngClick', ['$parse', '$timeout', '$rootElement',
       element.removeClass(ACTIVE_CLASS_NAME);
     }
 
-    element.bind('touchstart', function(event) {
+    element.on('touchstart', function(event) {
       tapping = true;
       tapElement = event.target ? event.target : event.srcElement; // IE uses srcElement.
       // Hack for Safari, which can target text nodes instead of containers.
@@ -203,15 +208,15 @@ ngMobile.directive('ngClick', ['$parse', '$timeout', '$rootElement',
       touchStartY = e.clientY;
     });
 
-    element.bind('touchmove', function(event) {
+    element.on('touchmove', function(event) {
       resetState();
     });
 
-    element.bind('touchcancel', function(event) {
+    element.on('touchcancel', function(event) {
       resetState();
     });
 
-    element.bind('touchend', function(event) {
+    element.on('touchend', function(event) {
       var diff = Date.now() - startTime;
 
       var touches = (event.changedTouches && event.changedTouches.length) ? event.changedTouches :
@@ -232,10 +237,9 @@ ngMobile.directive('ngClick', ['$parse', '$timeout', '$rootElement',
           tapElement.blur();
         }
 
-        scope.$apply(function() {
-          // TODO(braden): This is sending the touchend, not a tap or click. Is that kosher?
-          clickHandler(scope, {$event: event});
-        });
+        if (!angular.isDefined(attr.disabled) || attr.disabled === false) {
+          element.triggerHandler('click', [event]);
+        }
       }
 
       resetState();
@@ -245,20 +249,23 @@ ngMobile.directive('ngClick', ['$parse', '$timeout', '$rootElement',
     // something else nearby.
     element.onclick = function(event) { };
 
-    // Fallback click handler.
-    // Busted clicks don't get this far, and adding this handler allows ng-tap to be used on
-    // desktop as well, to allow more portable sites.
-    element.bind('click', function(event) {
+    // Actual click handler.
+    // There are three different kinds of clicks, only two of which reach this point.
+    // - On desktop browsers without touch events, their clicks will always come here.
+    // - On mobile browsers, the simulated "fast" click will call this.
+    // - But the browser's follow-up slow click will be "busted" before it reaches this handler.
+    // Therefore it's safe to use this directive on both mobile and desktop.
+    element.on('click', function(event, touchend) {
       scope.$apply(function() {
-        clickHandler(scope, {$event: event});
+        clickHandler(scope, {$event: (touchend || event)});
       });
     });
 
-    element.bind('mousedown', function(event) {
+    element.on('mousedown', function(event) {
       element.addClass(ACTIVE_CLASS_NAME);
     });
 
-    element.bind('mousemove mouseup', function(event) {
+    element.on('mousemove mouseup', function(event) {
       element.removeClass(ACTIVE_CLASS_NAME);
     });
 

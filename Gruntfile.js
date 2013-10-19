@@ -85,12 +85,13 @@ module.exports = function(grunt) {
         dest: 'build/angular-loader.js',
         src: util.wrap(['src/loader.js'], 'loader')
       },
-      mobile: {
-        dest: 'build/angular-mobile.js',
+      touch: {
+        dest: 'build/angular-touch.js',
         src: util.wrap([
-          'src/ngMobile/mobile.js',
-          'src/ngMobile/directive/ngClick.js',
-          'src/ngMobile/directive/ngSwipe.js'
+          'src/ngTouch/touch.js',
+          'src/ngTouch/swipe.js',
+          'src/ngTouch/directive/ngClick.js',
+          'src/ngTouch/directive/ngSwipe.js'
             ], 'module')
       },
       mocks: {
@@ -133,7 +134,7 @@ module.exports = function(grunt) {
       angular: 'build/angular.js',
       cookies: 'build/angular-cookies.js',
       loader: 'build/angular-loader.js',
-      mobile: 'build/angular-mobile.js',
+      touch: 'build/angular-touch.js',
       resource: 'build/angular-resource.js',
       sanitize: 'build/angular-sanitize.js',
       bootstrap: 'build/docs/components/angular-bootstrap.js',
