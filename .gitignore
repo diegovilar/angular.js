@@ -12,3 +12,6 @@ angular.js.tmproj
 node_modules
 angular.xcodeproj
 .idea
+/bower_components
+/npm-debug.log
+/tmp

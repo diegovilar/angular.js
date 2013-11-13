@@ -124,7 +124,8 @@ function Browser(window, document, $log, $sniffer) {
   //////////////////////////////////////////////////////////////
 
   var lastBrowserUrl = location.href,
-      baseElement = document.find('base');
+      baseElement = document.find('base'),
+      newLocation = null;
 
   /**
    * @name ng.$browser#url
@@ -147,27 +148,36 @@ function Browser(window, document, $log, $sniffer) {
    * @param {boolean=} replace Should new url replace current history record ?
    */
   self.url = function(url, replace) {
-    // setter
-    if (url) {
-      if (lastBrowserUrl == url) return;
-      lastBrowserUrl = url;
-      if ($sniffer.history) {
-        if (replace) history.replaceState(null, '', url);
-        else {
-          history.pushState(null, '', url);
-          // Crazy Opera Bug: http://my.opera.com/community/forums/topic.dml?id=1185462
-          baseElement.attr('href', baseElement.attr('href'));
-        }
+      // Android Browser BFCache causes location reference to become stale.
+      if (location !== window.location) location = window.location;
+
+      // setter
+      if (url) {
+          if (lastBrowserUrl == url) return;
+          lastBrowserUrl = url;
+          if ($sniffer.history) {
+              if (replace) history.replaceState(null, '', url);
+              else {
+                  history.pushState(null, '', url);
+                  // Crazy Opera Bug: http://my.opera.com/community/forums/topic.dml?id=1185462
+                  baseElement.attr('href', baseElement.attr('href'));
+              }
+          } else {
+              newLocation = url;
+              if (replace) {
+                  location.replace(url);
+              } else {
+                  location.href = url;
+              }
+          }
+          return self;
+          // getter
       } else {
-        if (replace) location.replace(url);
-        else location.href = url;
+          // - newLocation is a workaround for an IE7-9 issue with location.replace and location.href
+          //   methods not updating location.href synchronously.
+          // - the replacement is a workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=407172
+          return newLocation || location.href.replace(/%27/g,"'");
       }
-      return self;
-    // getter
-    } else {
-      // the replacement is a workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=407172
-      return location.href.replace(/%27/g,"'");
-    }
   };
 
   var urlChangeListeners = [],
