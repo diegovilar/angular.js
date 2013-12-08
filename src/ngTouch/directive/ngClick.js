@@ -41,8 +41,8 @@ ngTouch.config(['$provide', function($provide) {
   }]);
 }]);
 
-ngTouch.directive('ngClick', ['$parse', '$timeout', '$rootElement',
-    function($parse, $timeout, $rootElement) {
+ngTouch.directive('ngClick', ['$parse', '$timeout', '$rootElement', '$window',
+    function($parse, $timeout, $rootElement, $window) {
   var TAP_DURATION = 750; // Shorter than 750ms is a tap, longer is a taphold or drag.
   var MOVE_TOLERANCE = 12; // 12px seems to work in most mobile browsers.
   var PREVENT_DURATION = 2500; // 2.5 seconds maximum from preventGhostClick call to click
@@ -52,6 +52,11 @@ ngTouch.directive('ngClick', ['$parse', '$timeout', '$rootElement',
   var lastPreventedTime;
   var touchCoordinates;
 
+  var pointerEvents = !!$window.navigator.msPointerEnabled;
+  var TOUCHSTART_EVENT = pointerEvents ? 'MSPointerDown' : 'touchstart';
+  var TOUCHMOVE_EVENT = pointerEvents ? 'MSPointerMove' : 'touchmove';
+  var TOUCHEND_EVENT = pointerEvents ? 'MSPointerUp' : 'touchend';
+  var TOUCHCANCEL_EVENT = pointerEvents ? 'MSPointerCancel' : 'touchcancel';
 
   // TAP EVENTS AND GHOST CLICKS
   //
@@ -167,7 +172,7 @@ ngTouch.directive('ngClick', ['$parse', '$timeout', '$rootElement',
   function preventGhostClick(x, y) {
     if (!touchCoordinates) {
       $rootElement[0].addEventListener('click', onClick, true);
-      $rootElement[0].addEventListener('touchstart', onTouchStart, true);
+      $rootElement[0].addEventListener(TOUCHSTART_EVENT, onTouchStart, true);
       touchCoordinates = [];
     }
 
@@ -190,7 +195,7 @@ ngTouch.directive('ngClick', ['$parse', '$timeout', '$rootElement',
       element.removeClass(ACTIVE_CLASS_NAME);
     }
 
-    element.on('touchstart', function(event) {
+    element.on(TOUCHSTART_EVENT, function(event) {
       tapping = true;
       tapElement = event.target ? event.target : event.srcElement; // IE uses srcElement.
       // Hack for Safari, which can target text nodes instead of containers.
@@ -208,15 +213,15 @@ ngTouch.directive('ngClick', ['$parse', '$timeout', '$rootElement',
       touchStartY = e.clientY;
     });
 
-    element.on('touchmove', function(event) {
+    element.on(TOUCHMOVE_EVENT, function(event) {
       resetState();
     });
 
-    element.on('touchcancel', function(event) {
+    element.on(TOUCHCANCEL_EVENT, function(event) {
       resetState();
     });
 
-    element.on('touchend', function(event) {
+    element.on(TOUCHEND_EVENT, function(event) {
       var diff = Date.now() - startTime;
 
       var touches = (event.changedTouches && event.changedTouches.length) ? event.changedTouches :
